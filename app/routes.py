@@ -1,12 +1,22 @@
-from flask import Blueprint, jsonify, redirect, request, session
-
+from app.utils.tokens import get_access_token
 from config import Config
+
+from flask import Blueprint, jsonify, redirect, request, session
 
 import requests
 from urllib.parse import urlencode
 from uuid import uuid4
 
 bp = Blueprint('main', __name__)
+
+
+@bp.route('/')
+def index():
+    try:
+        print(get_access_token())
+        return '<a href="/oauth/login">Login</a>'
+    except ValueError:
+        return '<p>Токена нет</p><a href="/oauth/login">Login</a>'
 
 
 @bp.route('/v1.0/user/devices', methods=['GET'])

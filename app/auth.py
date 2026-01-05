@@ -1,6 +1,7 @@
-from flask import Blueprint, jsonify, redirect, request, session
-
+from app.utils.tokens import get_refresh_token, save_refresh_token
 from config import Config
+
+from flask import Blueprint, jsonify, redirect, request, session, url_for
 
 import requests
 from urllib.parse import urlencode
@@ -13,14 +14,14 @@ def oauth_login():
     params = {
         'response_type': 'code',
         'client_id': Config.CLIENT_ID,
-        'redirect_uri': Config.REDIRECT_URI,
+        'redirect_uri': 'http://localhost:5000/oauth/yandex/callback',
         'scope': 'iot:view iot:control'
     }
     url = 'https://oauth.yandex.ru/authorize?' + urlencode(params)
     return redirect(url)
 
 
-@bp.route('/oauth/callback', methods=['GET'])
+@bp.route('/oauth/yandex/callback', methods=['GET'])
 def oauth_callback():
     code = request.args.get('code')
     if not code:
@@ -34,9 +35,16 @@ def oauth_callback():
     }
 
     r = requests.post('https://oauth.yandex.ru/token', data=data)
-    token = r.json()
+    data = r.json()
 
-    # ⚠️ В реальном проекте — сохранить по user_id
-    session['access_token'] = token.get('access_token')
+    access_token = data.get('access_token')
+    if not access_token:
+        return 'No access token', 400
+
+    refresh_token = data.get('refresh_token')
+    if not refresh_token:
+        return 'No refresh token', 400
+    
+    save_refresh_token(refresh_token)
 
     return 'OAuth OK, you can close this page'
