@@ -1,5 +1,8 @@
+from cryptography.fernet import Fernet
+
 from dotenv import load_dotenv
 import os
+import time
 
 load_dotenv()
 
@@ -8,6 +11,11 @@ class Config:
     CLIENT_ID = os.getenv('CLIENT_ID')
     CLIENT_SECRET = os.getenv('CLIENT_SECRET')
     REDIRECT_URI = os.getenv('REDIRECT_URI')
+
+    REFRESH_TOKEN_FILE = 'refresh_token.enc'
+
+    ACCESS_TOKEN = None
+    ACCESS_TOKEN_EXPIRES_AT = 0
 
 
 assert Config.SECRET_KEY is not None
