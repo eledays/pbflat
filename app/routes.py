@@ -1,7 +1,7 @@
 from app.utils.tokens import get_access_token
 from config import Config
 
-from flask import Blueprint, jsonify, redirect, request, session
+from flask import Blueprint, jsonify, redirect, request, session, render_template
 
 import requests
 from urllib.parse import urlencode
@@ -13,10 +13,10 @@ bp = Blueprint('main', __name__)
 @bp.route('/')
 def index():
     try:
-        print(get_access_token())
-        return '<a href="/oauth/login">Login</a>'
+        get_access_token()
+        return render_template('index.html', logged_in=True)
     except ValueError:
-        return '<p>Токена нет</p><a href="/oauth/login">Login</a>'
+        return render_template('index.html', logged_in=False)
 
 
 @bp.route('/v1.0/user/devices', methods=['GET'])
@@ -99,5 +99,6 @@ def yandex_action():
 
 
 @bp.route('/health', methods=['GET'])
+@bp.route('/v1.0', methods=['GET'])
 def healthcheck():
-    return jsonify({"status": "ok"})
+    return 'ok', 200

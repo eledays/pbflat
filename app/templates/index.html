@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>pbflat login</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='index.css') }}">
+</head>
+<body>
+    {% if not logged_in %}
+    <div class="card">
+        <p>Войдите в свой Яндекс аккаунт, чтобы получить токен доступа. Он будет сохранен на сервере в зашифрованном виде</p>
+        <a href="/oauth/login">Войти</a>
+    </div>
+    {% else %}
+    <div class="card">
+        <p>Вы уже вошли в аккаунт, токен доступа сохранен на сервере в зашифрованном виде</p>
+        <a href="/logout" style="background-color: rgb(196, 196, 196); color: black;">Отвязать аккаунт</a>
+    </div>
+    {% endif %}
+</body>
+</html>

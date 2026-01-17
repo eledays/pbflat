@@ -1,4 +1,4 @@
-from app.utils.tokens import get_refresh_token, save_refresh_token
+from app.utils.tokens import get_refresh_token, save_refresh_token, delete_tokens
 from config import Config
 
 from flask import Blueprint, jsonify, redirect, request, session, url_for
@@ -47,4 +47,11 @@ def oauth_callback():
     
     save_refresh_token(refresh_token)
 
-    return 'OAuth OK, you can close this page'
+    return redirect('/')
+
+
+@bp.route('/logout', methods=['GET'])
+def logout():
+    session.clear()
+    delete_tokens()
+    return redirect('/')

@@ -79,3 +79,11 @@ def get_access_token():
         refresh_access_token()
     logger.info('Получен access_token')
     return Config.ACCESS_TOKEN
+
+
+def delete_tokens():
+    """Удаление access_token"""
+    Config.ACCESS_TOKEN = None
+    Config.ACCESS_TOKEN_EXPIRES_AT = 0
+    os.remove(Config.REFRESH_TOKEN_FILE)
+    logger.info('Удалены токены')
