@@ -61,13 +61,13 @@ def save_access_token(token: str, user_id: int, ttl: int):
     conn.commit()
 
 
-def validate_access_token(token: str):
+def validate_access_token(token: str) -> bool:
     cur = conn.execute(
         "SELECT user_id, expires_at FROM access_tokens WHERE token = ?", (token,)
     )
     row = cur.fetchone()
 
     if not row or row["expires_at"] < time.time():
-        return None
+        return False
 
-    return row["user_id"]
+    return True

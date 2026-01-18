@@ -1,4 +1,5 @@
 from config import Config
+from app.utils.tokens import validate_access_token
 
 from flask import Blueprint, jsonify, redirect, request, session, render_template
 
@@ -19,7 +20,18 @@ def index():
 
 @bp.route('/v1.0/user/devices', methods=['GET'])
 def yandex_devices():
-    print(request.headers)
+    authorization = request.headers.get('Authorization')
+    if authorization is None:
+        return jsonify({
+            "message": "Invalid token"
+        }), 401
+    
+    access_token = authorization.split(' ')[1]
+    if access_token is None or not validate_access_token(access_token):
+        return jsonify({
+            "message": "Invalid token"
+        }), 401
+    
     return jsonify({
         "request_id": str(uuid4()),
         "payload": {

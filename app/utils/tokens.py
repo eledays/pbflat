@@ -17,3 +17,7 @@ def generate_access_token(user_id: int) -> str:
     token = secrets.token_urlsafe(32)
     db.save_access_token(token, user_id, Config.ACCESS_TOKEN_TTL)
     return token
+
+
+def validate_access_token(token: str) -> bool:
+    return db.validate_access_token(token)
