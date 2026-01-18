@@ -8,13 +8,15 @@ from pathlib import Path
 load_dotenv()
 
 class Config:
-    BASE_DIR = Path(__file__).resolve().parent
-
     SECRET_KEY = os.getenv('SECRET_KEY')
-    OAUTH_CLIENT_ID = os.getenv('CLIENT_ID')
-    OAUTH_CLIENT_SECRET = os.getenv('CLIENT_SECRET')
+    OAUTH_CLIENT_ID = os.getenv('OAUTH_CLIENT_ID')
+    OAUTH_CLIENT_SECRET = os.getenv('OAUTH_CLIENT_SECRET')
 
     REFRESH_TOKEN_FILE = 'refresh_token.enc'
 
     ACCESS_TOKEN_TTL = 3600
     REFRESH_TOKEN_TTL = 60 * 60 * 24 * 30
+    VERIFICATION_TOKEN_TTL = 300
+
+    BASE_DIR = Path(__file__).resolve().parent
+    DB_PATH = BASE_DIR / "app.db"

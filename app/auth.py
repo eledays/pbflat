@@ -1,57 +1,52 @@
-from app.utils.tokens import get_refresh_token, save_refresh_token, delete_tokens
+from app.db import get_any_user
+from app.utils.tokens import generate_auth_code, exchange_code, generate_access_token
 from config import Config
 
-from flask import Blueprint, jsonify, redirect, request, session, url_for
-
-import requests
-from urllib.parse import urlencode
+from flask import Blueprint, jsonify, redirect, request, abort
 
 bp = Blueprint('auth', __name__)
 
 
-@bp.route('/oauth/login', methods=['GET'])
-def oauth_login():
-    params = {
-        'response_type': 'code',
-        'client_id': Config.OAUTH_CLIENT_ID,
-        'redirect_uri': '/oauth/yandex/callback',
-        'scope': 'iot:view iot:control'
-    }
-    url = 'https://oauth.yandex.ru/authorize?' + urlencode(params)
-    return redirect(url)
+@bp.route("/oauth/authorize", methods=["GET"])
+def authorize():
+    client_id = request.args.get("client_id")
+    redirect_uri = request.args.get("redirect_uri")
+    state = request.args.get("state")
+
+    if client_id != Config.OAUTH_CLIENT_ID:
+        print('Invalid client_id')
+        abort(400)
+
+    user = get_any_user()
+    if not user:
+        abort(500)
+
+    code = generate_auth_code(user["id"])
+    return redirect(f"{redirect_uri}?code={code}&state={state}")
 
 
-@bp.route('/oauth/yandex/callback', methods=['GET'])
-def oauth_callback():
-    code = request.args.get('code')
-    if not code:
-        return 'No code', 400
+@bp.route("/oauth/token", methods=["POST"])
+def token():
+    if (
+        request.form.get("client_id") != Config.OAUTH_CLIENT_ID
+        or request.form.get("client_secret") != Config.OAUTH_CLIENT_SECRET
+        or request.form.get("grant_type") != "authorization_code"
+    ):
+        abort(400)
 
-    data = {
-        'grant_type': 'authorization_code',
-        'code': code,
-        'client_id': Config.OAUTH_CLIENT_ID,
-        'client_secret': Config.OAUTH_CLIENT_SECRET
-    }
+    code = request.form.get("code")
+    if code is None:
+        abort(400)
 
-    r = requests.post('https://oauth.yandex.ru/token', data=data)
-    data = r.json()
+    user_id = exchange_code(code)
+    if not user_id:
+        abort(400)
 
-    access_token = data.get('access_token')
-    if not access_token:
-        return 'No access token', 400
-
-    refresh_token = data.get('refresh_token')
-    if not refresh_token:
-        return 'No refresh token', 400
-    
-    save_refresh_token(refresh_token)
-
-    return redirect('https://pbflat.ru/user.php')
-
-
-@bp.route('/logout', methods=['GET'])
-def logout():
-    session.clear()
-    delete_tokens()
-    return redirect('/')
+    access_token = generate_access_token(user_id)
+    return jsonify(
+        {
+            "access_token": access_token,
+            "token_type": "bearer",
+            "expires_in": Config.ACCESS_TOKEN_TTL,
+        }
+    )

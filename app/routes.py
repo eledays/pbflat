@@ -1,4 +1,3 @@
-from app.utils.tokens import get_access_token
 from config import Config
 
 from flask import Blueprint, jsonify, redirect, request, session, render_template
@@ -13,7 +12,6 @@ bp = Blueprint('main', __name__)
 @bp.route('/')
 def index():
     try:
-        get_access_token()
         return render_template('index.html', logged_in=True)
     except ValueError:
         return render_template('index.html', logged_in=False)
