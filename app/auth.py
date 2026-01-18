@@ -41,9 +41,9 @@ def token():
     Обмен кода авторизации на токен доступа
     """
 
-    client_id: str | None = request.args.get("client_id")
-    client_secret: str | None = request.args.get("client_secret")
-    grant_type: str | None = request.args.get("grant_type")
+    client_id: str | None = request.form.get("client_id")
+    client_secret: str | None = request.form.get("client_secret")
+    grant_type: str | None = request.form.get("grant_type")
 
     # Проверка, что все параметры переданы и совпадают с правильными значениями
     if (
@@ -51,15 +51,18 @@ def token():
         or client_secret != Config.OAUTH_CLIENT_SECRET
         or grant_type != "authorization_code"
     ):
+        print(f'Invalid parameters: {client_id = }, {client_secret = }, {grant_type = }')
         abort(400)
 
     code: str | None = request.form.get("code")
     if code is None:
+        print('Code is not provided')
         abort(400)
 
     # Обмен кода авторизации на id пользователя
     user_id: int | None = exchange_code(code)
     if not user_id:
+        print('Invalid code')
         abort(400)
 
     # Генерация токена доступа

@@ -18,5 +18,8 @@ class Config:
     REFRESH_TOKEN_TTL = 60 * 60 * 24 * 30
     VERIFICATION_TOKEN_TTL = 300
 
-    BASE_DIR = Path(__file__).resolve().parent
-    DB_PATH = BASE_DIR / "app.db"
+    BACKEND_URL: str = os.getenv('BACKEND_URL', 'http://192.168.0.10/sf')
+
+    BASE_DIR: Path = Path(__file__).resolve().parent
+    DB_PATH: Path = BASE_DIR / "app.db"
+
