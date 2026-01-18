@@ -21,6 +21,7 @@ def index():
 
 @bp.route('/v1.0/user/devices', methods=['GET'])
 def yandex_devices():
+    print(request.headers)
     return jsonify({
         "request_id": str(uuid4()),
         "payload": {

@@ -13,8 +13,8 @@ bp = Blueprint('auth', __name__)
 def oauth_login():
     params = {
         'response_type': 'code',
-        'client_id': Config.CLIENT_ID,
-        'redirect_uri': 'http://localhost:5000/oauth/yandex/callback',
+        'client_id': Config.OAUTH_CLIENT_ID,
+        'redirect_uri': '/oauth/yandex/callback',
         'scope': 'iot:view iot:control'
     }
     url = 'https://oauth.yandex.ru/authorize?' + urlencode(params)
@@ -30,8 +30,8 @@ def oauth_callback():
     data = {
         'grant_type': 'authorization_code',
         'code': code,
-        'client_id': Config.CLIENT_ID,
-        'client_secret': Config.CLIENT_SECRET
+        'client_id': Config.OAUTH_CLIENT_ID,
+        'client_secret': Config.OAUTH_CLIENT_SECRET
     }
 
     r = requests.post('https://oauth.yandex.ru/token', data=data)
@@ -47,7 +47,7 @@ def oauth_callback():
     
     save_refresh_token(refresh_token)
 
-    return redirect('/')
+    return redirect('https://pbflat.ru/user.php')
 
 
 @bp.route('/logout', methods=['GET'])
