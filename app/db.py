@@ -7,6 +7,9 @@ conn.row_factory = sqlite3.Row
 
 
 def init_db():
+    """
+    Создание таблиц в базе данных
+    """
     with open("app/schema.sql") as f:
         conn.executescript(f.read())
     conn.commit()
@@ -14,7 +17,7 @@ def init_db():
 
 # ---- users ----
 
-def get_any_user():
+def get_any_user() -> sqlite3.Row | None:
     cur = conn.execute("SELECT * FROM users LIMIT 1")
     return cur.fetchone()
 

@@ -3,46 +3,68 @@ from app.utils.tokens import generate_auth_code, exchange_code, generate_access_
 from config import Config
 
 from flask import Blueprint, jsonify, redirect, request, abort
+from sqlite3 import Row
 
 bp = Blueprint('auth', __name__)
 
 
 @bp.route("/oauth/authorize", methods=["GET"])
 def authorize():
-    client_id = request.args.get("client_id")
-    redirect_uri = request.args.get("redirect_uri")
-    state = request.args.get("state")
+    """
+    Получение кода авторизации
+    """
 
+    client_id: str | None = request.args.get("client_id")
+    redirect_uri: str | None = request.args.get("redirect_uri")
+    state: str | None = request.args.get("state")
+
+    # Проверка, что client_id совпадает с правильным
     if client_id != Config.OAUTH_CLIENT_ID:
         print('Invalid client_id')
         abort(400)
 
-    user = get_any_user()
-    if not user:
+    # Получение любого пользователя из БД
+    user: Row | None = get_any_user()
+    if user is None:
         abort(500)
 
-    code = generate_auth_code(user["id"])
+    # Генерация кода авторизации
+    code: str = generate_auth_code(user["id"])
+
+    # Перенаправление на redirect_uri с кодом авторизации
     return redirect(f"{redirect_uri}?code={code}&state={state}")
 
 
 @bp.route("/oauth/token", methods=["POST"])
 def token():
+    """
+    Обмен кода авторизации на токен доступа
+    """
+
+    client_id: str | None = request.args.get("client_id")
+    client_secret: str | None = request.args.get("client_secret")
+    grant_type: str | None = request.args.get("grant_type")
+
+    # Проверка, что все параметры переданы и совпадают с правильными значениями
     if (
-        request.form.get("client_id") != Config.OAUTH_CLIENT_ID
-        or request.form.get("client_secret") != Config.OAUTH_CLIENT_SECRET
-        or request.form.get("grant_type") != "authorization_code"
+        client_id != Config.OAUTH_CLIENT_ID
+        or client_secret != Config.OAUTH_CLIENT_SECRET
+        or grant_type != "authorization_code"
     ):
         abort(400)
 
-    code = request.form.get("code")
+    code: str | None = request.form.get("code")
     if code is None:
         abort(400)
 
-    user_id = exchange_code(code)
+    # Обмен кода авторизации на id пользователя
+    user_id: int | None = exchange_code(code)
     if not user_id:
         abort(400)
 
-    access_token = generate_access_token(user_id)
+    # Генерация токена доступа
+    access_token: str = generate_access_token(user_id)
+
     return jsonify(
         {
             "access_token": access_token,
